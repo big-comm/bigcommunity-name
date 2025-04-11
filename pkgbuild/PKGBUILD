@@ -1,5 +1,4 @@
 # Maintainer: Tales A. Mendonça <talesam@gmail.com>
-# Contribuitor: Vilmar Catafesta <vcatafesta@gmail.com>
 
 pkgname=bigcommunity-name
 pkgdesc="Configure system name and os-release for BigCommunity"
