@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installation file for Arch Linux packages
+
 # This file contains scripts that are executed at different stages of package installation/upgrade/removal
 
 # Color definitions for status messages
