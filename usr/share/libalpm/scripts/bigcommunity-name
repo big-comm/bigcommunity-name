@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+# Color definitions for status messages
+blueDark="\e[1;38;5;33m"
+mediumBlue="\e[1;38;5;32m"
+lightBlue="\e[1;38;5;39m"
+cyan="\e[1;38;5;45m"
+white="\e[1;97m"
+reset="\e[0m"
+
+# Brand information
+communityName="BigCommunity"
+basedOn="BigLinux"
+fullName="${communityName}, based in ${basedOn}"
+websiteUrl="https://communitybig.org"
+docsUrl="https://manual.biglinux.com.br"
+supportUrl="https://t.me/BigLinuxCommunity"
+bugReportUrl="https://github.com/communitybig"
+logoName="comm-menu"
+systemId="biglinux"
+
+# Print status messages
+printMsg() {
+    local message=$1
+    echo -e "${blueDark}[${lightBlue}${communityName}${blueDark}]${reset} ${cyan}→${reset} ${white}${message}${reset}"
+}
+
+# Apply text replacement in a file
+replaceInFile() {
+    local filePath=$1
+    local pattern=$2
+    local replacement=$3
+    
+    if [[ -f "$filePath" ]]; then
+        sed -i "$pattern" "$filePath"
+        return $?
+    else
+        printMsg "Warning: File not found - $filePath"
+        return 1
+    fi
+}
+
+# Update basic system identification
+updateSystemIssue() {
+    printMsg "Updating system issue information..."
+    
+    local issueFile='/etc/issue'
+    replaceInFile "$issueFile" "s|^Manjaro Linux|${fullName}|g"
+    replaceInFile "$issueFile" "s|^BigLinux, based in Manjaro Linux|${fullName}|g"
+}
+
+# Update OS release information
+updateOsRelease() {
+    printMsg "Updating OS release information..."
+    
+    local osReleaseFile='/usr/lib/os-release'
+    local replacements=(
+        "s|^ *\\bNAME\\b *=.*|NAME=\"${fullName}\"|"
+        "s|^ *\\bPRETTY_NAME\\b *=.*|PRETTY_NAME=\"${fullName}\"|"
+        "s|^ *\\bHOME_URL\\b *=.*|HOME_URL=\"${websiteUrl}\"|"
+        "s|^ *\\bDOCUMENTATION_URL\\b *=.*|DOCUMENTATION_URL=\"${docsUrl}\"|"
+        "s|^ *\\bSUPPORT_URL\\b *=.*|SUPPORT_URL=\"${supportUrl}\"|"
+        "s|^ *\\LOGO\\b *=.*|LOGO=\"${logoName}\"|"
+        "s|^ *\\ID\\b *=.*|ID=${systemId}|"
+        "s|^ *\\bBUG_REPORT_URL\\b *=.*|BUG_REPORT_URL=\"${bugReportUrl}\"|"
+        "s|^ *\\bPRIVACY_POLICY_URL=.*||"
+    )
+    
+    for replacement in "${replacements[@]}"; do
+        replaceInFile "$osReleaseFile" "$replacement"
+    done
+    
+    # Update symlink to ensure consistency
+    if [[ -e "$osReleaseFile" ]]; then
+        printMsg "Updating OS release symlink..."
+        rm -f /etc/os-release
+        ln -sf "$osReleaseFile" /etc/os-release
+    fi
+}
+
+# Update LSB release information
+updateLsbRelease() {
+    printMsg "Updating LSB release information..."
+    
+    local lsbReleaseFile='/etc/lsb-release'
+    replaceInFile "$lsbReleaseFile" "s|^ *\\bDISTRIB_ID\\b *=.*|DISTRIB_ID=\"${communityName} based in Manjaro Linux\"|g;s|^ *\\bDISTRIB_DESCRIPTION\\b *=.*|DISTRIB_DESCRIPTION=\"${communityName}\"|g"
+}
+
+# Update GRUB configuration
+updateGrubConfig() {
+    printMsg "Updating GRUB configuration..."
+    
+    local grubConfigFile='/etc/default/grub'
+    replaceInFile "$grubConfigFile" "s|^GRUB_THEME=.*|GRUB_THEME=\"/boot/grub/themes/community/theme.txt\"|"
+    replaceInFile "$grubConfigFile" "s|^GRUB_DISTRIBUTOR=.*|GRUB_DISTRIBUTOR=\"${communityName}\"|"
+    
+    # Update BTRFS configuration
+    local btrfsConfigFile='/etc/default/grub-btrfs/config'
+    replaceInFile "$btrfsConfigFile" "s|#GRUB_BTRFS_SUBMENUNAME=.*|GRUB_BTRFS_SUBMENUNAME=\"Snapshots\"|g"
+    
+    # Update GRUB Linux script
+    local grubLinuxScript='/etc/grub.d/10_linux'
+    replaceInFile "$grubLinuxScript" "s|OS=\"\${GRUB_DISTRIBUTOR} Linux\"|OS=\"\${GRUB_DISTRIBUTOR}\"|g"
+}
+
+# Main execution flow
+main() {
+    printMsg "Starting system branding update..."
+    
+    updateSystemIssue
+    updateOsRelease
+    updateLsbRelease
+    updateGrubConfig
+    
+    printMsg "System branding update completed successfully!"
+}
+
+# Execute main function
+main
