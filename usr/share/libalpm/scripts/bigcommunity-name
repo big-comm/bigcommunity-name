@@ -109,7 +109,7 @@ main() {
     
     updateSystemIssue
     updateOsRelease
-    updateLsbRelease
+    #updateLsbRelease
     updateGrubConfig
     
     printMsg "System branding update completed successfully!"
