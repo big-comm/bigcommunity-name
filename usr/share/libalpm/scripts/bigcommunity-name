@@ -17,7 +17,7 @@ docsUrl="https://manual.biglinux.com.br"
 supportUrl="https://t.me/BigLinuxCommunity"
 bugReportUrl="https://github.com/communitybig"
 logoName="comm-menu"
-systemId="biglinux"
+systemId="bigcommunity"
 
 # Print status messages
 printMsg() {
